@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bar Stock Manager</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 12px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 10px 0 15px;
+        }
+        
+        h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #e94560, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+        
+        .add-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #e94560, #ff6b6b);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin: 10px 0;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 15px rgba(233, 69, 96, 0.4);
+        }
+        
+        .add-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(233, 69, 96, 0.6);
+        }
+        
+        /* Category Filter */
+        .filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin: 15px 0;
+            padding: 0 5px;
+        }
+        
+        .filter-btn {
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            color: #8892b0;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: rgba(233, 69, 96, 0.3);
+            border-color: #e94560;
+            color: #fff;
+        }
+        
+        .bottles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+        }
+        
+        .bottle-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 10px 8px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+        }
+        
+        .bottle-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .bottle-card.hidden {
+            display: none;
+        }
+        
+        /* Quantity Badge */
+        .quantity-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: linear-gradient(135deg, #e94560, #ff6b6b);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 3px 6px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(233, 69, 96, 0.5);
+        }
+        
+        .bottle-visual {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 6px;
+        }
+        
+        .bottle-svg {
+            width: 35px;
+            height: 70px;
+        }
+        
+        .bottle-outline {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.3);
+            stroke-width: 2;
+        }
+        
+        .bottle-fill {
+            transition: all 0.3s ease;
+        }
+        
+        .bottle-name {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-align: center;
+            line-height: 1.2;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            min-height: 1.7em;
+            margin-bottom: 6px;
+        }
+        
+        /* Compact slider */
+        .percentage-slider {
+            width: 100%;
+            margin: 4px 0;
+        }
+        
+        .percentage-slider input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .percentage-slider input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #fff;
+            cursor: pointer;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .bottle-actions {
+            display: flex;
+            gap: 4px;
+            justify-content: center;
+            margin-top: 6px;
+        }
+        
+        .btn {
+            padding: 4px 8px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.65rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+        
+        .btn-edit {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+        
+        .btn-edit:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-delete {
+            background: rgba(233, 69, 96, 0.2);
+            color: #e94560;
+        }
+        
+        .btn-delete:hover {
+            background: rgba(233, 69, 96, 0.4);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #8892b0;
+        }
+        
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        
+        /* Desktop */
+        @media (min-width: 768px) {
+            body {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .bottles-grid {
+                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+                gap: 15px;
+            }
+            
+            .bottle-card {
+                padding: 15px 12px;
+            }
+            
+            .bottle-svg {
+                width: 45px;
+                height: 90px;
+            }
+            
+            .bottle-name {
+                font-size: 0.85rem;
+            }
+            
+            .btn {
+                padding: 6px 12px;
+                font-size: 0.75rem;
+            }
+            
+            .filter-btn {
+                font-size: 0.85rem;
+                padding: 8px 16px;
+            }
+            
+            .percentage-slider input[type="range"]::-webkit-slider-thumb {
+                width: 18px;
+                height: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🍸 Bar Stock</h1>
+            <a href="/add" class="add-button">+ Add Bottle</a>
+        </header>
+        
+        <!-- Category Filter -->
+        <div class="filter-bar">
+            <button class="filter-btn active" data-category="all">All</button>
+            {% for cat in all_categories %}
+            <button class="filter-btn" data-category="{{ cat }}">{{ cat }}</button>
+            {% endfor %}
+        </div>
+        
+        {% if categories_dict %}
+        <div class="bottles-grid">
+            {% for category, bottles in categories_dict.items() %}
+                {% for bottle in bottles %}
+                <div class="bottle-card" data-id="{{ bottle.id }}" data-category="{{ bottle.category }}">
+                    {% if bottle.quantity > 1 %}
+                    <div class="quantity-badge">+{{ bottle.quantity - 1 }}</div>
+                    {% endif %}
+                    
+                    <div class="bottle-visual">
+                        <svg class="bottle-svg" viewBox="0 0 60 120">
+                            <path class="bottle-outline" d="M20 25 L20 15 Q20 10 25 10 L35 10 Q40 10 40 15 L40 25 Q50 30 50 45 L50 110 Q50 115 45 115 L15 115 Q10 115 10 110 L10 45 Q10 30 20 25 Z"/>
+                            <defs>
+                                <clipPath id="bottle-clip-{{ bottle.id }}">
+                                    <path d="M20 25 L20 15 Q20 10 25 10 L35 10 Q40 10 40 15 L40 25 Q50 30 50 45 L50 110 Q50 115 45 115 L15 115 Q10 115 10 110 L10 45 Q10 30 20 25 Z"/>
+                                </clipPath>
+                            </defs>
+                            <rect class="bottle-fill" 
+                                  clip-path="url(#bottle-clip-{{ bottle.id }})"
+                                  x="0" 
+                                  y="{{ 115 - (bottle.main_bottle_pct * 0.85) }}" 
+                                  width="60" 
+                                  height="{{ bottle.main_bottle_pct * 0.85 }}"
+                                  data-pct="{{ bottle.main_bottle_pct }}"/>
+                        </svg>
+                    </div>
+                    
+                    <h3 class="bottle-name">{{ bottle.name }}</h3>
+                    
+                    <div class="percentage-slider">
+                        <input type="range" 
+                               min="0" max="100" 
+                               value="{{ bottle.main_bottle_pct }}"
+                               data-bottle-id="{{ bottle.id }}"
+                               class="fill-slider">
+                    </div>
+                    
+                    <div class="bottle-actions">
+                        <a href="/edit/{{ bottle.id }}" class="btn btn-edit">✏️</a>
+                        <form action="/delete/{{ bottle.id }}" method="POST" style="display:inline;" onsubmit="return confirm('Delete?');">
+                            <button type="submit" class="btn btn-delete">🗑️</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            {% endfor %}
+        </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">🍾</div>
+                <h2>No bottles yet!</h2>
+                <p>Add your first bottle to get started</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <script>
+        // Get color based on percentage (red < 25, orange in middle, green >= 80)
+        function getColorForPercentage(pct) {
+            if (pct < 25) {
+                // Red to orange (0-25%)
+                const ratio = pct / 25;
+                const r = 220;
+                const g = Math.round(60 + ratio * 100);
+                const b = 60;
+                return `rgb(${r}, ${g}, ${b})`;
+            } else if (pct < 80) {
+                // Orange to green (25-80%)
+                const ratio = (pct - 25) / 55;
+                const r = Math.round(220 - ratio * 150);
+                const g = Math.round(160 + ratio * 60);
+                const b = Math.round(60 + ratio * 20);
+                return `rgb(${r}, ${g}, ${b})`;
+            } else {
+                // Green (80-100%)
+                return 'rgb(70, 220, 80)';
+            }
+        }
+        
+        // Apply colors on load
+        document.querySelectorAll('.bottle-fill').forEach(fill => {
+            const pct = parseInt(fill.dataset.pct) || 0;
+            fill.setAttribute('fill', getColorForPercentage(pct));
+        });
+        
+        // Category filter
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const category = this.dataset.category;
+                
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                document.querySelectorAll('.bottle-card').forEach(card => {
+                    if (category === 'all' || card.dataset.category === category) {
+                        card.classList.remove('hidden');
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                });
+            });
+        });
+        
+        // Slider updates
+        document.querySelectorAll('.fill-slider').forEach(slider => {
+            slider.addEventListener('input', function() {
+                const card = this.closest('.bottle-card');
+                const pct = parseInt(this.value);
+                
+                // Update bottle fill SVG
+                const fillRect = card.querySelector('.bottle-fill');
+                fillRect.setAttribute('y', 115 - (pct * 0.85));
+                fillRect.setAttribute('height', pct * 0.85);
+                fillRect.setAttribute('fill', getColorForPercentage(pct));
+                fillRect.dataset.pct = pct;
+            });
+            
+            // Save on release
+            slider.addEventListener('change', function() {
+                const bottleId = this.dataset.bottleId;
+                const pct = parseInt(this.value);
+                
+                fetch(`/api/update_percentage/${bottleId}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({percentage: pct})
+                });
+            });
+        });
+    </script>
+</body>
+</html>
